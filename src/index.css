@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #FFF9E6;
+  --color-gold-100: #FFECB3;
+  --color-gold-200: #FFD54F;
+  --color-gold-300: #FFCA28;
+  --color-gold-400: #FFB300;
+  --color-gold-500: #DAA520;
+  --color-gold-600: #B8860B;
+  --color-gold-700: #8B6508;
+  --color-gold-800: #5E3A00;
+  --color-gold-900: #3E2500;
+  --color-luxury-dark: #1A1A2E;
+  --color-luxury-darker: #16213E;
+  --color-luxury-soft: #0F3460;
+  --color-luxury-accent: #E94560;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-gray-800;
+  }
+}
+
+@layer components {
+  @keyframes pulseZoom {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.2); }
+    65% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+  }
+
+  .pulse-zoom {
+    transform-origin: center;
+    will-change: transform, color, filter;
+    transition: transform 180ms ease-in-out, color 180ms ease-in-out, filter 180ms ease-in-out, text-shadow 180ms ease-in-out;
+    cursor: pointer;
+    /* Disabled by default on small screens for performance and motion reduction */
+    animation: none;
+  }
+
+  .pulse-zoom svg {
+    transition: transform 220ms ease-in-out;
+  }
+
+  .pulse-zoom:hover svg {
+    transform: scale(1.06);
+  }
+
+  /* Enable pulsing and richer hover effects only on large screens (lg >= 1024px) */
+  @media (min-width: 1024px) {
+    .pulse-zoom {
+      animation: pulseZoom 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+
+    .pulse-zoom:hover {
+      animation-play-state: paused;
+      transform: scale(1.14) translateY(-1px) !important;
+      color: var(--gk-primary);
+      filter: drop-shadow(0 10px 25px rgba(218, 165, 32, 0.18));
+      text-shadow: 0 0 12px rgba(218, 165, 32, 0.35);
+      transition: transform 180ms ease-in-out, color 180ms ease-in-out, filter 180ms ease-in-out, text-shadow 180ms ease-in-out;
+    }
+
+    .pulse-zoom:hover svg {
+      transform: scale(1.08);
+    }
+  }
+
+}
+
+
+
+@keyframes colorCycle {
+  0%, 12.5% {
+    color: #000;
+  }
+
+  12.5%, 25% {
+    color: #544444;
+  }
+
+  25%, 37.5% {
+    color: rgb(202, 190, 119);
+  }
+
+  37.5%, 50% {
+    color: rgb(98, 98, 53);
+  }
+
+  50%, 62.5% {
+    color: rgb(185, 38, 38);
+  }
+
+  62.5%, 75% {
+    color: rgba(50, 205, 50, 0.73);
+  }
+
+  75%, 87.5% {
+    color: #16a0ce;
+  }
+
+  87.5%, 100% {
+    color: violet;
+  }
+}
+
+.color-cycle {
+  animation: colorCycle 8s steps(1) infinite;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-cycle svg {
+  color: inherit;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+
+@keyframes oscillate {
+  0% {
+    margin-top: 0px;
+  }
+  50% {
+    margin-top: -6px;
+  }
+  100% {
+    margin-top: 0px;
+  }
+}
