@@ -105,45 +105,6 @@ const usePriceDirection = (value, timeoutMs = 1200) => {
   return direction;
 };
 
-// ─── Heartbeat ──────────────────────────────────────────────────────────────
-//
-// The real market feed only pushes a new value when the price actually
-// changes, which can mean several quiet seconds with no visible movement.
-// This ticks once a second regardless, purely to drive a subtle "pulse" on
-// the price numbers so the page always reads as live — not just when the
-// underlying price happens to move.
-//
-const useHeartbeat = (intervalMs = 1000) => {
-  const [tick, setTick] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-
-  return tick;
-};
-
-// One-time global styles for the tick pulse + live ping dot. Injected once
-// from HeroSection (not per-card) so we don't duplicate <style> tags.
-const LiveEffectsStyle = () => (
-  <style>{`
-    @keyframes priceTickPulse {
-      0%   { transform: scale(1);     filter: drop-shadow(0 0 0 var(--tick-glow, transparent)); }
-      35%  { transform: scale(1.045); filter: drop-shadow(0 0 7px var(--tick-glow, transparent)); }
-      100% { transform: scale(1);     filter: drop-shadow(0 0 0 var(--tick-glow, transparent)); }
-    }
-    .price-tick {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25em;
-      animation: priceTickPulse 700ms ease-out;
-      transform-origin: center;
-      transition: color 300ms ease-in-out, filter 300ms ease-in-out;
-    }
-  `}</style>
-);
-
 // ─── Price Card ─────────────────────────────────────────────────────────────
 
 const PriceCard = ({
@@ -161,7 +122,6 @@ const PriceCard = ({
   accent,
   isLightTheme,
   className = "",
-  tick = 0,
 }) => {
   const { t, i18n } = useTranslation();
   const rgb = hexToRgb(accent);
@@ -182,20 +142,10 @@ const PriceCard = ({
     color: DIRECTION_META[direction]?.color || fallbackColor,
   });
 
-  // Glow used by the every-second pulse: green/red when the price actually
-  // just moved, otherwise a soft glow in the card's own accent color so the
-  // "quiet" seconds still feel alive instead of static.
-  const tickGlow = (direction) =>
-    direction === "up"
-      ? "rgba(22, 163, 74, 0.55)"
-      : direction === "down"
-        ? "rgba(220, 38, 38, 0.55)"
-        : `rgba(${rgb}, 0.5)`;
-
   const DirectionArrow = ({ direction }) =>
     direction ? (
       <span
-        className="text-[0.6em] leading-none"
+        className="text-[0.6em] leading-none ml-1 inline-block"
         style={{ color: DIRECTION_META[direction].color }}
       >
         {DIRECTION_META[direction].arrow}
@@ -253,9 +203,6 @@ const PriceCard = ({
 
         {/* ==================================================
             LIVE PRICE
-            This appears between the title and BUY / SELL.
-            Shows 2 decimal places and flashes green/red with a
-            ▲/▼ arrow whenever the live tick moves up or down.
         ================================================== */}
         {livePrice !== undefined && livePrice !== null && (
           <div className="flex flex-col items-center justify-center mb-4">
@@ -270,20 +217,14 @@ const PriceCard = ({
             </p>
 
             <p
-              className="text-lg sm:text-xl md:text-2xl font-black leading-tight text-center"
+              className="text-lg sm:text-xl md:text-2xl font-black leading-tight text-center flex items-center justify-center"
               style={directionStyle(liveDirection, valueColor)}
             >
-              <span
-                key={`${livePrice}_${tick}`}
-                className="price-tick"
-                style={{ "--tick-glow": tickGlow(liveDirection) }}
-              >
-                {formatUSD(livePrice)}
-                <span className="text-[0.55em] font-semibold tracking-normal">
-                  / oz
-                </span>
-                <DirectionArrow direction={liveDirection} />
+              <span>{formatUSD(livePrice)}</span>
+              <span className="text-[0.55em] font-semibold tracking-normal ml-1">
+                / oz
               </span>
+              <DirectionArrow direction={liveDirection} />
             </p>
 
           </div>
@@ -313,17 +254,11 @@ const PriceCard = ({
             </p>
 
             <p
-              className="text-sm sm:text-base lg:text-lg font-black leading-tight text-center"
+              className="text-sm sm:text-base lg:text-lg font-black leading-tight text-center flex items-center justify-center"
               style={directionStyle(buyDirection, valueColor)}
             >
-              <span
-                key={`${buyPrice}_${tick}`}
-                className="price-tick"
-                style={{ "--tick-glow": tickGlow(buyDirection) }}
-              >
-                {formatNumber(buyPrice ?? numericValue, decimals, i18n.language)}
-                <DirectionArrow direction={buyDirection} />
-              </span>
+              <span>{formatNumber(buyPrice ?? numericValue, decimals, i18n.language)}</span>
+              <DirectionArrow direction={buyDirection} />
             </p>
 
             {prefix && (
@@ -357,17 +292,11 @@ const PriceCard = ({
             </p>
 
             <p
-              className="text-sm sm:text-base lg:text-lg font-black leading-tight text-center"
+              className="text-sm sm:text-base lg:text-lg font-black leading-tight text-center flex items-center justify-center"
               style={directionStyle(sellDirection, valueColor)}
             >
-              <span
-                key={`${sellPrice}_${tick}`}
-                className="price-tick"
-                style={{ "--tick-glow": tickGlow(sellDirection) }}
-              >
-                {formatNumber(sellPrice ?? numericValue, decimals, i18n.language)}
-                <DirectionArrow direction={sellDirection} />
-              </span>
+              <span>{formatNumber(sellPrice ?? numericValue, decimals, i18n.language)}</span>
+              <DirectionArrow direction={sellDirection} />
             </p>
 
             {prefix && (
@@ -573,8 +502,6 @@ const HeroSection = () => {
   const silverBuyDirection = usePriceDirection(silverBuy);
   const silverSellDirection = usePriceDirection(silverSell);
 
-  const tick = useHeartbeat(1000);
-
   const headingColor = isLightTheme
     ? theme.primary === "#1a1a1a"
       ? "#1a1a1a"
@@ -612,7 +539,6 @@ const HeroSection = () => {
       className="relative min-h-screenv -mt-0 flex flex-col justify-center overflow-hidden"
       style={{ background: sectionBg }}
     >
-      <LiveEffectsStyle />
       <GridTexture primary={theme.primary} />
 
       <div
@@ -794,7 +720,6 @@ const HeroSection = () => {
                   sub={`${formatUSD(goldUSD)} / oz`}
                   accent="#FFB000"
                   isLightTheme={isLightTheme}
-                  tick={tick}
                 />
 
                 <PriceCard
@@ -807,7 +732,6 @@ const HeroSection = () => {
                   sub="23.85 Karat"
                   accent="#E8A33D"
                   isLightTheme={isLightTheme}
-                  tick={tick}
                 />
 
                 <PriceCard
@@ -822,7 +746,6 @@ const HeroSection = () => {
                   sub={`${formatUSD(silverUSD)} / oz`}
                   accent="#B8C4CE"
                   isLightTheme={isLightTheme}
-                  tick={tick}
                 />
 
               </div>

@@ -1,17 +1,17 @@
 // pages/HomePage.jsx
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 // import Navbar from '../../components/HomePage/Navbar';
-import HeroSection from '../../components/HomePage/HeroSection';
-import CurrencyTicker from '../../components/HomePage/CurrencyTicker';
+import HeroSection from "../../components/HomePage/HeroSection";
+import CurrencyTicker from "../../components/HomePage/CurrencyTicker";
 // import MarketRatesSection from '../../components/HomePage/MarketRatesSection';
-import ShopsSection from '../../components/HomePage/ShopsSection';
-import Footer from '../../components/HomePage/Footer';
-import HomePageSkeleton from '../../components/HomePage/HomePageSkeleton';
-import SmoothScrollProvider from '../../components/HomePage/fx/SmoothScrollProvider';
-import HomeCursor from '../../components/HomePage/fx/HomeCursor';
-import { publicAPI } from '../../services/publicApi';
-import PublicPicture from '../../components/HomePage/PublicPicture';
+import ShopsSection from "../../components/HomePage/ShopsSection";
+import Footer from "../../components/HomePage/Footer";
+import HomePageSkeleton from "../../components/HomePage/HomePageSkeleton";
+import SmoothScrollProvider from "../../components/HomePage/fx/SmoothScrollProvider";
+import HomeCursor from "../../components/HomePage/fx/HomeCursor";
+import { publicAPI } from "../../services/publicApi";
+import PublicPicture from "../../components/HomePage/PublicPicture";
 // import LanguageSwitcher from '../../components/HomePage/LanguageSwitcher';
 // import LanguageSwitcher from '../../components/LanguageSwitcher';
 
@@ -32,8 +32,11 @@ const HomePage = () => {
       setLastFetch(new Date());
       setError(null);
     } catch (err) {
-      console.error('Failed to fetch home page data:', err);
-      setError(err.response?.data?.message || 'Failed to load market data. Please try again.');
+      console.error("Failed to fetch home page data:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to load market data. Please try again.",
+      );
     } finally {
       if (isInitial) setLoading(false);
     }
@@ -70,13 +73,18 @@ const HomePage = () => {
           >
             Connection Error
           </h2>
-          <p className="text-[#a19574] text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8 px-2">{error}</p>
+          <p className="text-[#a19574] text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8 px-2">
+            {error}
+          </p>
           <motion.button
-            whileHover={{ scale: 1.01, boxShadow: '0 0 20px rgba(212, 175, 55, 0.25)' }}
+            whileHover={{
+              scale: 1.01,
+              boxShadow: "0 0 20px rgba(212, 175, 55, 0.25)",
+            }}
             whileTap={{ scale: 0.99 }}
             onClick={() => fetchData(true)}
             className="w-full py-3 sm:py-3.5 rounded-xl font-medium tracking-wide text-[#030201] text-sm sm:text-base transition-all duration-300 shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #e6c667, #b88e2f)' }}
+            style={{ background: "linear-gradient(135deg, #e6c667, #b88e2f)" }}
           >
             Retry Connection
           </motion.button>
@@ -118,7 +126,10 @@ const HomePage = () => {
         </motion.div>
 
         {/* Ultra-Responsive Floating Currency Ticker Wrapper */}
-        <div id="currencies" className="relative z-20 -mt-6 sm:-mt-10 md:-mt-12 px-4 sm:px-6 max-w-7xl mx-auto w-full overflow-hidden">
+        <div
+          id="currencies"
+          className="relative z-20 -mt-6 sm:-mt-10 md:-mt-12 px-4 sm:px-6 max-w-7xl mx-auto w-full overflow-hidden"
+        >
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -132,7 +143,6 @@ const HomePage = () => {
 
         {/* Main Structural Layout Content */}
         <main className="relative z-10 w-full">
-
           {/* Market Rates Breakdown Section */}
           <motion.section
             id="rates"
@@ -154,7 +164,10 @@ const HomePage = () => {
                     className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight"
                     style={{ fontFamily: '"Playfair Display", serif' }}
                   >
-                    Featured <span className="italic font-normal text-[#c9a84c]">Products</span>
+                    Featured{" "}
+                    <span className="italic font-normal text-[#c9a84c]">
+                      Products
+                    </span>
                   </h2>
                 </div>
               </div>
@@ -170,9 +183,7 @@ const HomePage = () => {
             <div className="w-full overflow-hidden rounded-xl sm:rounded-2xl transition-all duration-500 hover:shadow-[0_0_40px_rgba(212,175,55,0.02)]">
               {/* <MarketRatesSection marketPrices={data?.marketPrices} /> */}
               <PublicPicture />
-
             </div>
-
           </motion.section>
 
           {/* Premium Shops & Partners Grid Section */}
@@ -189,18 +200,23 @@ const HomePage = () => {
                 <span className="text-[#d4af37] text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] block mb-1 sm:mb-2">
                   Verified Access
                 </span>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight mb-3 sm:mb-4" style={{ fontFamily: '"Playfair Display", serif' }}>
+                <h2
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-white tracking-tight mb-3 sm:mb-4"
+                  style={{ fontFamily: '"Playfair Display", serif' }}
+                >
                   Premium Partners & Shops
                 </h2>
                 <div className="w-10 sm:w-14 h-[1px] bg-[#d4af37]/30 mx-auto" />
               </div>
 
               <div className="w-full">
-                <ShopsSection shops={data?.shops || []} currencies={data?.marketPrices?.currencies} />
+                <ShopsSection
+                  shops={data?.shops || []}
+                  currencies={data?.marketPrices?.currencies}
+                />
               </div>
             </div>
           </motion.section>
-
         </main>
 
         {/* Elegant, Non-Intrusive Stale Data Notification (Mobile and Desktop Adaptive) */}
@@ -211,13 +227,21 @@ const HomePage = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 15, scale: 0.95 }}
               className="fixed bottom-4 right-4 left-4 sm:left-auto z-50 px-4 py-3.5 rounded-xl border border-amber-500/20 text-amber-300 text-xs max-w-full sm:max-w-sm shadow-[0_20px_40px_rgba(0,0,0,0.6)] backdrop-blur-lg flex items-start gap-3"
-              style={{ background: 'linear-gradient(135deg, rgba(18,14,8,0.96), rgba(8,6,3,0.98))' }}
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(18,14,8,0.96), rgba(8,6,3,0.98))",
+              }}
             >
-              <span className="text-sm sm:text-base mt-0.5 flex-shrink-0">⚠️</span>
+              <span className="text-sm sm:text-base mt-0.5 flex-shrink-0">
+                ⚠️
+              </span>
               <div className="flex-1">
-                <p className="font-semibold text-white mb-0.5">Network Sync Interrupted</p>
+                <p className="font-semibold text-white mb-0.5">
+                  Network Sync Interrupted
+                </p>
                 <p className="text-[#a19574] leading-relaxed text-[11px] sm:text-xs">
-                  Displaying cached valuations. Attempting automatic reconnection...
+                  Displaying cached valuations. Attempting automatic
+                  reconnection...
                 </p>
               </div>
             </motion.div>
