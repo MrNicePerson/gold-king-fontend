@@ -108,7 +108,6 @@ const ShopsSection = ({ shops = [], currencies }) => {
         .ss-card-in  { animation: cardIn  0.38s cubic-bezier(0.22,1,0.36,1) both }
         .ss-fade-in  { animation: fadeIn  0.2s ease-out }
         .ss-input::placeholder { color: ${textMuted}; opacity: 0.6 }
-        .ss-pill-city:hover  { background: ${p}20 !important; border-color: ${p}60 !important; }
         .ss-sort-row:hover   { background: ${p}12 !important; }
         .ss-sort-row.active  { background: ${p}22 !important; border-left: 2px solid ${p} !important; }
         .ss-view-btn:hover   { border-color: ${p}55 !important; color: ${p} !important; background: ${p}0d !important; }
@@ -164,26 +163,49 @@ const ShopsSection = ({ shops = [], currencies }) => {
               />
             </div>
 
-            {/* City pills */}
-            <div className="flex gap-2 flex-wrap">
-              {cities.map((city) => {
-                const active = cityFilter === city;
-                return (
-                  <button
-                    key={city}
-                    onClick={() => setCityFilter(city)}
-                    className="ss-pill-city px-4 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap capitalize transition-all duration-200"
-                    style={{
-                      background: active ? `${p}22` : `${p}08`,
-                      border: `1px solid ${active ? `${p}90` : border}`,
-                      color: active ? p : textMuted,
-                      boxShadow: active ? `0 0 16px ${p}18` : 'none',
-                    }}
-                  >
-                    {city === 'all' ? `🏠 ${t('common.all')}` : `📍 ${city}`}
-                  </button>
-                );
-              })}
+            {/* City selector: options stay in sync with cities present in the shop data. */}
+            <div className="w-full sm:w-auto sm:min-w-[220px] sm:max-w-[300px]">
+              <label htmlFor="live-shops-city" className="sr-only">
+                {t('shop.city', { defaultValue: 'Filter shops by city' })}
+              </label>
+              <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: p }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M12 21s7-4.35 7-11a7 7 0 10-14 0c0 6.65 7 11 7 11z" />
+                  <circle cx="12" cy="10" r="2.5" strokeWidth={2} />
+                </svg>
+                <select
+                  id="live-shops-city"
+                  value={cityFilter}
+                  onChange={(e) => setCityFilter(e.target.value)}
+                  className="w-full appearance-none pl-10 pr-10 py-2.5 rounded-xl text-sm font-semibold outline-none transition-colors cursor-pointer capitalize"
+                  style={{
+                    background: isDark ? `${p}08` : `${p}0a`,
+                    border: `1px solid ${border}`,
+                    color: cityFilter === 'all' ? textMuted : p,
+                    colorScheme: isDark ? 'dark' : 'light',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = `${p}80`; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = border; }}
+                >
+                  {cities.map((city) => {
+                    const shopCount = city === 'all'
+                      ? shops.length
+                      : shops.filter((shop) => shop.city === city).length;
+                    const cityName = city === 'all' ? t('common.all', { defaultValue: 'All cities' }) : city;
+                    return (
+                      <option key={city} value={city}>
+                        {city === 'all' ? `🏠 ${cityName}` : `📍 ${cityName}`} · {formatNumberByLanguage(shopCount, i18n.language)}
+                      </option>
+                    );
+                  })}
+                </select>
+                <svg className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+                  style={{ color: textMuted }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
           </div>
 

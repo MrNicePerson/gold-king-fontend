@@ -13,6 +13,8 @@ import {
 
 import { authAPI } from '../services/authApi';
 
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000;
+const LAST_ACTIVITY_KEY = 'goldchain_last_activity';
 
 // ============================================================
 // AUTH CONTEXT
@@ -56,6 +58,7 @@ export const AuthProvider = ({ children }) => {
   const clearLocalAuth = useCallback(() => {
     localStorage.removeItem('goldchain_token');
     localStorage.removeItem('goldchain_user');
+    localStorage.removeItem(LAST_ACTIVITY_KEY);
 
     setToken(null);
     setUser(null);
@@ -208,6 +211,7 @@ export const AuthProvider = ({ children }) => {
         'goldchain_token',
         newToken
       );
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(Date.now()));
 
 
       // ------------------------------------------------------
@@ -344,6 +348,91 @@ export const AuthProvider = ({ children }) => {
 
 
   // ==========================================================
+  // LOG OUT AFTER ONE HOUR WITHOUT USER ACTIVITY
+  // ==========================================================
+
+  useEffect(() => {
+    if (loading || !token || !user) return undefined;
+
+    let lastActivityAt = Number(localStorage.getItem(LAST_ACTIVITY_KEY));
+    if (!Number.isFinite(lastActivityAt) || lastActivityAt <= 0) {
+      lastActivityAt = Date.now();
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(lastActivityAt));
+    }
+
+    let timer;
+    let lastPersistedAt = lastActivityAt;
+    let isLoggingOut = false;
+
+    const checkInactivity = () => {
+      if (isLoggingOut) return;
+
+      const sharedActivityAt = Number(localStorage.getItem(LAST_ACTIVITY_KEY)) || 0;
+      lastActivityAt = Math.max(lastActivityAt, sharedActivityAt);
+      const remaining = IDLE_TIMEOUT_MS - (Date.now() - lastActivityAt);
+
+      if (remaining <= 0) {
+        isLoggingOut = true;
+        logout();
+        return;
+      }
+
+      timer = window.setTimeout(checkInactivity, remaining);
+    };
+
+    const recordActivity = () => {
+      if (isLoggingOut) return;
+
+      // A delayed browser timer must not let the first interaction after an
+      // hour of inactivity extend an already expired session.
+      const sharedActivityAt = Number(localStorage.getItem(LAST_ACTIVITY_KEY)) || 0;
+      lastActivityAt = Math.max(lastActivityAt, sharedActivityAt);
+      if (Date.now() - lastActivityAt >= IDLE_TIMEOUT_MS) {
+        checkInactivity();
+        return;
+      }
+
+      lastActivityAt = Date.now();
+      // Throttle writes from frequent pointer/scroll events while keeping
+      // activity synchronized across tabs.
+      if (lastActivityAt - lastPersistedAt >= 1000) {
+        lastPersistedAt = lastActivityAt;
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(lastActivityAt));
+      }
+
+      window.clearTimeout(timer);
+      timer = window.setTimeout(checkInactivity, IDLE_TIMEOUT_MS);
+    };
+
+    const syncActivity = (event) => {
+      if (event.key !== LAST_ACTIVITY_KEY || !event.newValue) return;
+      const sharedActivityAt = Number(event.newValue);
+      if (Number.isFinite(sharedActivityAt) && sharedActivityAt > lastActivityAt) {
+        lastActivityAt = sharedActivityAt;
+        window.clearTimeout(timer);
+        timer = window.setTimeout(checkInactivity, IDLE_TIMEOUT_MS);
+      }
+    };
+
+    const activityEvents = ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach((eventName) => {
+      window.addEventListener(eventName, recordActivity, { passive: true });
+    });
+    window.addEventListener('storage', syncActivity);
+
+    checkInactivity();
+
+    return () => {
+      window.clearTimeout(timer);
+      activityEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, recordActivity);
+      });
+      window.removeEventListener('storage', syncActivity);
+    };
+  }, [loading, token, user, logout]);
+
+
+  // ==========================================================
   // CONTEXT VALUE
   // ==========================================================
 
@@ -367,4 +456,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
