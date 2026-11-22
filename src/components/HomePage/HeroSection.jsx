@@ -682,9 +682,10 @@ const HeroSection = () => {
                 </div>
 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (user) {
-                      logout();
+                      const loggedOut = await logout();
+                      if (!loggedOut) return;
                       window.location.href = "/";
                     } else {
                       window.location.href = "/login";

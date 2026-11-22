@@ -316,8 +316,9 @@ export default function CustomerProfilePage() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    const loggedOut = await logout();
+    if (!loggedOut) return;
     navigate('/login');
   };
 

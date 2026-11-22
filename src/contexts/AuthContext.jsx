@@ -307,43 +307,24 @@ export const AuthProvider = ({ children }) => {
   // ==========================================================
 
   const logout = useCallback(async () => {
+    const currentToken =
+      localStorage.getItem('goldchain_token');
 
     try {
-
-      const currentToken =
-        localStorage.getItem('goldchain_token');
-
-
-      // ------------------------------------------------------
-      // Call backend logout
-      // ------------------------------------------------------
-
       if (currentToken) {
-
-        try {
-
-          await authAPI.logout();
-
-        } catch (error) {
-
-          console.error(
-            'Backend logout failed:',
-            error
-          );
-
-          // We still clear the local session below.
-        }
+        await authAPI.logout(currentToken);
       }
-
-    } finally {
-
-      // ------------------------------------------------------
-      // Always clear local authentication
-      // ------------------------------------------------------
-
-      clearLocalAuth();
+    } catch (error) {
+      console.error('Backend logout failed:', error);
+      window.alert(
+        error.response?.data?.message ||
+        'Logout failed. Please check your connection and try again.'
+      );
+      return false;
     }
 
+    clearLocalAuth();
+    return true;
   }, [clearLocalAuth]);
 
 

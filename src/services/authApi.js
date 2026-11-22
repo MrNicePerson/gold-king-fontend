@@ -7,5 +7,7 @@ export const authAPI = {
   changePassword: (data)         => api.put('/auth/change-password', data),
   forgotPassword: (data)         => api.post('/auth/forgot-password', data),
   resetPassword:  (token, data)  => api.post(`/auth/reset-password/${token}`, data),
-  logout: () => {return api.post('/auth/logout');},
+  logout: (token) => api.post('/auth/logout', null, {
+    headers: { Authorization: `Bearer ${token}` },
+  }),
 };

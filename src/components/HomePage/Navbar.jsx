@@ -180,79 +180,6 @@ const ThemeVars = ({ theme }) => {
     return null;
 };
 
-// ─── Logout Confirmation Modal ──────────────────────────────────────────────
-const LogoutModal = ({ theme, isLightTheme, onConfirm, onCancel }) => {
-    const { t } = useTranslation();
-    const gradientStyle = { background: theme.gradient };
-    const logoTextStyle = { color: theme.logoText };
-
-    return (
-        <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center px-4"
-            style={{ background: 'rgba(0,0,0,0.6)' }}
-            onClick={onCancel}
-        >
-            <div
-                className="w-full max-w-sm rounded-2xl overflow-hidden"
-                style={{
-                    background: isLightTheme ? theme.bg : '#0e0b06',
-                    border: `1px solid ${theme.border}`,
-                    boxShadow: isLightTheme ? '0 20px 60px rgba(0,0,0,0.15)' : '0 20px 60px rgba(0,0,0,0.7)',
-                }}
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="h-px w-full" style={{ background: `linear-gradient(to right, transparent, ${theme.primary}80, transparent)` }} />
-
-                <div className="p-6">
-                    <div className="flex justify-center mb-4">
-                        <div
-                            className="w-14 h-14 rounded-full flex items-center justify-center"
-                            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}
-                        >
-                            <IcoLogout size={24} />
-                        </div>
-                    </div>
-
-                    <h3
-                        className="text-center text-lg font-bold mb-1"
-                        style={{ fontFamily: '"Playfair Display", serif', color: theme.textPrimary }}
-                    >
-                        {t('auth.logout')}
-                    </h3>
-                    <p className="text-center text-sm mb-6" style={{ color: theme.textMuted }}>
-                        {t('auth.logoutModalDesc', { defaultValue: 'Are you sure you want to sign out of GOLDKING?' })}
-                    </p>
-
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onCancel}
-                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                            style={{
-                                background: 'transparent',
-                                border: `1px solid ${theme.border}`,
-                                color: theme.textMuted,
-                            }}
-                        >
-                            {t('common.cancel')}
-                        </button>
-                        <button
-                            onClick={onConfirm}
-                            className="flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
-                            style={{
-                                background: 'rgba(239,68,68,0.12)',
-                                border: '1px solid rgba(239,68,68,0.35)',
-                                color: '#ef4444',
-                            }}
-                        >
-                            <IcoLogout size={15} /> {t('auth.logout')}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 // ─── Sidebar nav link ───────────────────────────────────────────────────────
 const SidebarLink = ({ icon: Icon, label, to, href, isAnchor, onClick, isActive, badge, theme }) => {
     const base = `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium`;
@@ -313,8 +240,6 @@ const Navbar = ({ embedInline = false, triggerClassName = '' }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [profileData, setProfileData] = useState(null);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showLogoutModal, setShowLogoutModal] = useState(false);
-
     const { theme, currentTheme, setCurrentTheme, isLightTheme } = useTheme();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -340,7 +265,12 @@ const Navbar = ({ embedInline = false, triggerClassName = '' }) => {
         }
     }, [user]);
 
-    const handleLogout = () => { logout(); navigate('/login'); setSidebarOpen(false); setShowLogoutModal(false); };
+    const handleLogout = async () => {
+        const loggedOut = await logout();
+        if (!loggedOut) return;
+        navigate('/login');
+        setSidebarOpen(false);
+    };
 
     const getDashboardPath = () => {
         if (user?.role === 'super_admin') return '/super-admin';
@@ -400,15 +330,6 @@ const Navbar = ({ embedInline = false, triggerClassName = '' }) => {
     // on every page, regardless of what wraps <Navbar />.
     const portalContent = (
         <>
-            {showLogoutModal && (
-                <LogoutModal
-                    theme={theme}
-                    isLightTheme={isLightTheme}
-                    onConfirm={handleLogout}
-                    onCancel={() => setShowLogoutModal(false)}
-                />
-            )}
-
             {/* ══ HEADER (fixed full-width bar — only in non-embedded mode) ════════ */}
             {!embedInline && (
                 <header
@@ -538,7 +459,7 @@ const Navbar = ({ embedInline = false, triggerClassName = '' }) => {
                 <div className="px-4 pb-6 pt-2 shrink-0 border-t" style={{ borderColor: theme.border }}>
                     {user ? (
                         <button
-                            onClick={() => { setSidebarOpen(false); setShowLogoutModal(true); }}
+                            onClick={handleLogout}
                             className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium mt-4"
                             style={{ color: theme.textMuted, border: `1px solid ${theme.border}`, background: 'transparent' }}
                         >
