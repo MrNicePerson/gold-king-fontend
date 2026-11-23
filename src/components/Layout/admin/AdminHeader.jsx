@@ -117,6 +117,13 @@ export default function AdminHeader({ sidebarWidth = 240, onMobileMenuOpen }) {
     ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : 'A';
 
+  const handleLogout = async () => {
+    const loggedOut = await logout();
+    if (loggedOut) {
+      navigate('/login');
+    }
+  };
+
   return (
     <header
       className={[
@@ -267,7 +274,7 @@ export default function AdminHeader({ sidebarWidth = 240, onMobileMenuOpen }) {
         />
 
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl text-[13px] font-semibold transition-all duration-150"
           style={{
             color:       mutedColor,

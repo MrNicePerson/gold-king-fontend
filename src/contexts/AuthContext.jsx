@@ -316,6 +316,15 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Backend logout failed:', error);
+      // If session is already invalid or expired, clear local auth anyway so user is not stuck
+      if (
+        error.response?.status === 401 ||
+        error.response?.data?.code === 'SESSION_INVALID' ||
+        error.response?.data?.code === 'SESSION_REVOKED'
+      ) {
+        clearLocalAuth();
+        return true;
+      }
       window.alert(
         error.response?.data?.message ||
         'Logout failed. Please check your connection and try again.'
